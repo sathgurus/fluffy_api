@@ -4,15 +4,20 @@ const Admin = require('../adminModel');
 const fs = require("fs");
 const path = require("path");
 const Services = require("../serviceModel");
+const { getDbConnections } = require('../../utils/dbConnections');
+const staffSchema = require('../staffModel')
+
 
 async function seedDefaultData(dbConnections) {
     try {
-        const { adminConn, ownerConn, customerConn } = dbConnections;
+        const { adminConn, ownerConn, customerConn } = getDbConnections();
+        
         const filePath = path.join(__dirname, "../../config/", "servicesSampleData.json");
         const jsonData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
 
         const AdminUser = adminConn.model('Admin', Admin);
+        const Staff = adminConn.model("Staff", staffSchema);
         const Users = await adminConn.model('User', User);
         const BusinessOwners = await ownerConn.model('User', User);
         const EndUsers = await customerConn.model('User', User);
@@ -39,6 +44,7 @@ async function seedDefaultData(dbConnections) {
             Users.init(),
             BusinessOwners.init(),
             EndUsers.init(),
+            Staff.init(),
 
         ]);
 

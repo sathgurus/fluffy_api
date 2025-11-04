@@ -41,6 +41,8 @@ async function startServer() {
     // Store connections globally (so controllers can access)
     setDbConnections(dbConnections);
 
+    seedDefaultData();
+
 
 
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
