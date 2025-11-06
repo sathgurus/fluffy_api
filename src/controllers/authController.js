@@ -1,6 +1,7 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
-const {  connectCustomerDB, connectBusinessOwnerDB, connectAdminDB } = require("../config/db");
+const { connectCustomerDB, connectBusinessOwnerDB, connectAdminDB } = require("../config/db");
 const userSchema = require("../model/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt")
@@ -27,7 +28,10 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Invalid or missing role" });
     }
 
+    const commonUserId = new mongoose.Types.ObjectId();
+
     const adminUser = new AdminUser({
+      _id: commonUserId,
       name,
       phone,
       email,
@@ -42,6 +46,7 @@ const register = async (req, res) => {
 
     if (role === "business_owner") {
       const businessOwnerUser = new BusinessOwnerUser({
+        _id: commonUserId,
         name,
         phone,
         email,
@@ -54,6 +59,7 @@ const register = async (req, res) => {
       await businessOwnerUser.save();
     } else if (role === "end_user") {
       const endUser = new EndUserUser({
+        _id: commonUserId,
         name,
         phone,
         email,
@@ -102,7 +108,7 @@ const verifyOTP = async (req, res) => {
       const otherUser = await BusinessOwnerUser.findById(userId);
       if (otherUser) {
         otherUser.otpVerified = true;
-        user.isUserRegister = ture
+        otherUser.isUserRegister = true
         //otherUser.otp = null;
         await otherUser.save({ validateBeforeSave: false });
       }
@@ -110,7 +116,7 @@ const verifyOTP = async (req, res) => {
       const otherUser = await EndUserUser.findById(userId);
       if (otherUser) {
         otherUser.otpVerified = true;
-        user.isUserRegister = ture
+        otherUser.isUserRegister = true
         //otherUser.otp = null;
         await otherUser.save({ validateBeforeSave: false });
       }
@@ -208,4 +214,38 @@ const login = async (req, res) => {
 };
 
 
-module.exports = { register, verifyOTP, login };
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const { adminConn } = getDbConnections();
+    const AdminUser = adminConn.model("User", userSchema);
+
+    // Find user in Admin DB
+    const user = await AdminUser.findById(id).select("-password"); // remove password from response
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found in Admin database",
+      });
+    }
+
+    // ✅ Success response
+    return res.status(200).json({
+      message: "User fetched successfully",
+      user,
+    });
+
+  } catch (err) {
+    console.error("❌ Error fetching user:", err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+
+
+module.exports = { register, verifyOTP, login, getUserById };

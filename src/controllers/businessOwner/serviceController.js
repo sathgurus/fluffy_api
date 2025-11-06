@@ -10,6 +10,7 @@ const addServiceController = async (req, res) => {
     let { businessOwnerId, services } = req.body;
      const { adminConn, ownerConn, customerConn } = getDbConnections();
     const AdminUser = adminConn.model("Services", serviceSchema);
+    const BusinessOwner = ownerConn.model("Services", serviceSchema);
 
     // Validate businessOwnerId
     if (!businessOwnerId) {
