@@ -12,6 +12,11 @@ const serviceSchema = new mongoose.Schema(
 
 const categorySchema = new mongoose.Schema({
   name: { type: String, required: true },
+  businessOwnerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "userSchema", 
+      required: false,
+    },
   services: [serviceSchema],
 });
 

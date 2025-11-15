@@ -8,9 +8,11 @@ const { getDbConnections } = require('../../utils/dbConnections');
 const addServiceController = async (req, res) => {
   try {
     let { businessOwnerId, services } = req.body;
-     const { adminConn, ownerConn, customerConn } = getDbConnections();
+    const { adminConn, ownerConn, customerConn } = getDbConnections();
     const AdminUser = adminConn.model("Services", serviceSchema);
     const BusinessOwner = ownerConn.model("Services", serviceSchema);
+
+    console.log("request", req.body);
 
     // Validate businessOwnerId
     if (!businessOwnerId) {
@@ -23,25 +25,26 @@ const addServiceController = async (req, res) => {
     }
 
     // Prepare service documents
-    const serviceDocs = services.map((srv) => {
-      if (!srv.serviceName || !srv.price) {
-        throw new Error("Each service must have serviceName and price");
-      }
-      return {
-        businessOwnerId,
-        serviceName: srv.serviceName,
-        price: srv.price,
-        discount: srv.discount || 0,
-      };
-    });
+    let serviceDocs = [];
 
-    // Insert all at once
-    const newServices = await AdminUser.insertMany(serviceDocs);
+    const insertedData = await BusinessOwner.insertMany(
+      services.map((cat) => ({
+        businessOwnerId: businessOwnerId,
+        name: cat.name,
+        services: cat.services.map((srv) => ({
+          name: srv.name,
+          price: srv.price,
+        })),
+      }))
+    );
 
-    res.status(201).json({
-      message: "Services added successfully",
-      count: newServices.length,
-      services: newServices,
+
+    //console.log("inserted data", insertedData)
+
+    return res.status(201).json({
+      message: "✅ Services added successfully",
+      count: insertedData.length,
+      services: insertedData
     });
   } catch (err) {
     console.error("❌ Error adding services:", err);
@@ -75,7 +78,7 @@ const getAllServices = async (req, res) => {
     const AdminUser = adminConn.model("Services", serviceSchema);
     const services = await AdminUser.find().sort({ createdAt: -1 });
 
-    console.log("response",services);
+    //console.log("response",services);
 
     res.status(200).json({
       message: "All services fetched successfully",
@@ -88,4 +91,4 @@ const getAllServices = async (req, res) => {
   }
 };
 
-module.exports = { addServiceController, getServicesByOwnerController,getAllServices };
+module.exports = { addServiceController, getServicesByOwnerController, getAllServices };
