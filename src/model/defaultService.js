@@ -4,7 +4,7 @@ const defaultServiceSchema = new mongoose.Schema(
   {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // auto-generates id
     name: { type: String, required: true },
-    price: { type: Number, required: true },
+    //price: { type: Number, required: true },
 
   },
   { timestamps: true }
@@ -20,4 +20,4 @@ const categorySchema = new mongoose.Schema({
   services: [defaultServiceSchema],
 });
 
-module.exports = categorySchema;
+module.exports = mongoose.model("Default_services", defaultServiceSchema);
