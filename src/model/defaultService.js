@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const serviceSchema = new mongoose.Schema(
+const defaultServiceSchema = new mongoose.Schema(
   {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // auto-generates id
     name: { type: String, required: true },
@@ -17,7 +17,7 @@ const categorySchema = new mongoose.Schema({
       ref: "userSchema", 
       required: false,
     },
-  services: [serviceSchema],
+  services: [defaultServiceSchema],
 });
 
 module.exports = categorySchema;
