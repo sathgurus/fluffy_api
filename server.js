@@ -1,10 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-
 const runMigrations = require("./src/config/migrationHelper");
 const seedDefaultData = require("./src/config/seedDefaultData");
 const connectDB = require("./src/config/db");
+const commonRoutes = require("./src/routes/commonRoute");
 
 const app = express();
 app.use(cors());
@@ -20,6 +20,10 @@ async function startServer() {
 
         // 3️⃣ Seed default data
         await seedDefaultData();
+
+        // call common routes
+        
+        app.use("/api", commonRoutes);
 
         // 4️⃣ Start server
         const PORT = process.env.PORT || 5000;

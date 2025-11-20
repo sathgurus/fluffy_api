@@ -8,9 +8,19 @@ const userSchema = new mongoose.Schema(
             required: [true, "Name is required"],
             trim: true,
         },
+        businessName: {
+            type: String,
+            required: [true, "Business name is required"],
+            trim: true,
+        },
         phone: {
             type: String,
-            required: [true, "Phone number is required"],
+            required: [true, "Business phone number is required"],
+            match: [/^[0-9]{10}$/, "Please enter a valid 10-digit phone number"],
+        },
+        alternatePhone: {
+            type: String,
+            default: "", // optional
             match: [/^[0-9]{10}$/, "Please enter a valid 10-digit phone number"],
         },
         email: {
@@ -50,7 +60,7 @@ const userSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ["admin", "business_owner", "end_user"],
+            enum: ["admin", "owner", "customer"],
             default: "end_user",
             required: [true, "User role is required"],
         },
@@ -59,11 +69,23 @@ const userSchema = new mongoose.Schema(
         resetOTP: { type: String },
         otpExpires: { type: Date },
         isUserRegister: { type: Boolean, default: false },
-        isAddBusiness: { type: Boolean, default: false },
         isAddLocation: { type: Boolean, default: false },
         isAddPersonal: { type: Boolean, default: false },
         isAddService: { type: Boolean, default: false },
         isFormSubmit: { type: Boolean, default: false },
+
+        business_website: {
+            type: String,
+            trim: true,
+            lowercase: true,
+            default: "",
+            match: [
+                /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/,
+                "Please enter a valid website URL",
+            ],
+        },
+        
+
     },
 
     {
@@ -80,4 +102,4 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("BusinessUsers", userSchema);

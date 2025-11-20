@@ -3,9 +3,9 @@ const fs = require("fs");
 const path = require("path");
 
 // Import models
-const User = require('../model/users');
-const Admin = require('../model/admin');
-const DefaultService = require('../model/defaultService');
+const User = require('../model/businessUserModel');
+const Admin = require('../model/adminModel');
+const DefaultService = require('../model/defaultServiceModel');
 
 async function seedDefaultData() {
     try {
