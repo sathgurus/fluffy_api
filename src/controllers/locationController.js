@@ -5,8 +5,9 @@ const BusinessUsers = require("../model/businessUserModel")
 
 const setBusinessLocation = async (req, res) => {
     try {
-        const { businessId } = req.query;
-        const { latitude, longitude, radius } = req.body;
+
+        const { latitude, longitude, radius, businessId } = req.body;
+        console.log("location data",req.body)
 
         if (!latitude || !longitude) {
             return res.status(400).json({

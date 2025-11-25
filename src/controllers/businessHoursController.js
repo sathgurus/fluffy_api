@@ -3,8 +3,7 @@ const BusinessUsers = require("../model/businessUserModel")
 
 const setBusinessHours = async (req, res) => {
     try {
-        const { businessId } = req.query;
-        const { hours } = req.body;
+        const { hours,businessId } = req.body;
 
         if (!hours || !Array.isArray(hours) || hours.length !== 7) {
             return res.status(400).json({

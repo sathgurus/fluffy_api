@@ -57,10 +57,10 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Phone number already registered" });
     }
 
-    const existingEmail = await User.findOne({ businessEmail });
-    if (existingEmail) {
-      return res.status(400).json({ message: "Email already registered" });
-    }
+    // const existingEmail = await User.findOne({ businessEmail });
+    // if (existingEmail) {
+    //   return res.status(400).json({ message: "Email already registered" });
+    // }
 
     // 🔹 Generate OTP
     const otp = "12345"; // generateOTP();  // use your logic later
@@ -146,13 +146,15 @@ const verifyOTP = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { phone, password } = req.body;
+    const { businessPhone, password } = req.body;
 
-    if (!phone || !password) {
+    console.log(req.body)
+
+    if (!businessPhone || !password) {
       return res.status(400).json({ message: "Phone and password required" });
     }
 
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ businessPhone });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -166,6 +168,7 @@ const login = async (req, res) => {
     // 🔍 ❗ Owner must be verified to login
     if (user.role === "owner" && user.isVerified === false) {
       return res.status(403).json({
+        isVerified:false,
         message: "Your business is not verified. Please contact customer care.",
       });
     }
@@ -175,7 +178,7 @@ const login = async (req, res) => {
       {
         id: user._id,
         role: user.role,
-        phone: user.phone,
+        phone: user.businessPhone,
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -187,7 +190,7 @@ const login = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        phone: user.phone,
+        phone: user.businessPhone,
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
