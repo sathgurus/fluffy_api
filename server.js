@@ -16,7 +16,7 @@ async function startServer() {
         await connectDB();
 
         // 2️⃣ Run migrations
-        await runMigrations();
+        //await runMigrations();
 
         // 3️⃣ Seed default data
         await seedDefaultData();

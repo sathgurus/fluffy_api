@@ -32,9 +32,7 @@ async function seedDefaultData() {
             console.log('ℹ️ Super Admin already exists');
         }
 
-        // ================================
-        // 🔹 2. Seed Default Services (from JSON)
-        // ================================
+        
         const filePath = path.join(__dirname, "../config/", "servicesSampleData.json");
         const jsonData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
@@ -47,11 +45,8 @@ async function seedDefaultData() {
             console.log("ℹ️ Services already exist");
         }
 
-        // ================================
-        // 🔹 3. Initialize Indexes (Very important)
-        // ================================
         await Promise.all([
-            User.init(),
+           // User.init(),
             Admin.init(),
             DefaultService.init(),
         ]);

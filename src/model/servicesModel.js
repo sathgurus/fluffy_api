@@ -5,6 +5,12 @@ const serviceSchema = new mongoose.Schema(
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // auto-generates id
         name: { type: String, required: true },
         price: { type: Number, required: true },
+        discount: { type: Number, required: false },
+        serviceType: {
+            type: String,
+            enum: ["weekday", "weekend"],
+            required: true,
+        },
 
     },
     { timestamps: true }

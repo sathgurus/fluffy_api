@@ -1,4 +1,6 @@
+const BusinessUsers = require("../model/businessUserModel");
 const ShopVerify = require("../model/shopDetailsModel");
+const Admin = require("../model/adminModel")
 
 
 const createShopVerification = async (req, res) => {
@@ -6,55 +8,59 @@ const createShopVerification = async (req, res) => {
         const {
             ownerId,
             gstNumber,
-            gstDocument,
             panNumber,
-            panDocument,
             aadharNumber,
-            aadharDocument,
             address,
-            addressDocument,
             shopLogo,
             shopPhotos,
         } = req.body;
+
+        console.log("req ", req.body);
+
+        // -------------------- VALIDATIONS -------------------- //
 
         if (!ownerId) {
             return res.status(400).json({ message: "ownerId is required" });
         }
 
-        // At least one identity proof must exist
-        if (
-            !gstNumber &&
-            !gstDocument &&
-            !panNumber &&
-            !panDocument &&
-            !aadharNumber &&
-            !aadharDocument
-        ) {
-            return res.status(400).json({
-                message: "Provide at least one of GST, PAN, or Aadhar (number or document)",
-            });
+        // Aadhaar required
+        if (!aadharNumber) {
+            return res.status(400).json({ message: "Aadhaar number is required" });
         }
 
+        // Business Logo required
+        if (!shopLogo) {
+            return res.status(400).json({ message: "Business logo is required" });
+        }
+
+        // shopPhotos can be optional but must be array
+        let photos = Array.isArray(shopPhotos) ? shopPhotos : [];
+
+        // -------------------- SAVE DATA -------------------- //
         const shopData = new ShopVerify({
             ownerId,
             gstNumber,
-            gstDocument,
             panNumber,
-            panDocument,
             aadharNumber,
-            aadharDocument,
             address,
-            addressDocument,
             shopLogo,
-            shopPhotos,
+            shopPhotos: photos,
         });
 
         await shopData.save();
 
+        // UPDATE business user
+        await BusinessUsers.findByIdAndUpdate(
+            ownerId,
+            { isAddPersonal: true, shopVerification: shopData._id },
+            { new: true }
+        );
+
         res.status(201).json({
-            message: "Shop verification details submitted successfully",
+            message: "Shop verification details saved successfully",
             shopVerification: shopData,
         });
+
     } catch (err) {
         console.error("❌ Error saving shop verification:", err);
         res.status(500).json({ error: err.message });
@@ -62,21 +68,18 @@ const createShopVerification = async (req, res) => {
 };
 
 
-const getAllShopVerifications = async (req, res) => {
-    
-    try {
-        const shopData = await ShopVerify.find().sort({ createdAt: -1 }); // latest first
 
-        if (!shopData || shopData.length === 0) {
-            return res.status(404).json({
-                message: "No shop verification requests found",
-            });
-        }
+const getAllShopVerifications = async (req, res) => {
+    try {
+        const user = await BusinessUsers.find({ isVerified: false })
+            .populate("businessLocation")
+            .populate("businessHours")
+            .populate("shopVerification");
 
         res.status(200).json({
-            message: "All shop verification requests fetched successfully",
-            count: shopData.length,
-            shopVerification: shopData,
+            message: "All requests fetched successfully",
+            count: user.length,
+            data: user
         });
 
     } catch (err) {
@@ -86,20 +89,22 @@ const getAllShopVerifications = async (req, res) => {
 };
 
 
+
 const updateVerificationStatus = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { status, verifiedBy, verificationNotes } = req.body;
+
+        const { businessId, status, verifiedBy, verificationNotes } = req.body;
 
         if (!["pending", "approved", "rejected"].includes(status)) {
             return res.status(400).json({ message: "Invalid verification status" });
         }
 
-        const shopData = await ShopVerify.findById(id);
+        const shopData = await BusinessUsers.findById(businessId);
         if (!shopData) {
-            return res.status(404).json({ message: "Shop verification not found" });
+            return res.status(404).json({ message: "Shop not found" });
         }
 
+        // Update fields
         shopData.verificationStatus = status;
         shopData.verifiedBy = verifiedBy || null;
         shopData.verificationNotes = verificationNotes || null;
@@ -108,33 +113,36 @@ const updateVerificationStatus = async (req, res) => {
 
         await shopData.save();
 
-        const updatedShop = await ShopVerify.findById(id).populate(
-            "verifiedBy",
-            "name email"
-        );
+        // ✔ FIX: Fetch admin who verified
+        let verifiedUser = null;
+        if (verifiedBy) {
+            verifiedUser = await Admin.findById(verifiedBy).select("name email");
+        }
 
         res.status(200).json({
             message: "Verification status updated successfully",
             shopVerification: {
-                id: updatedShop._id,
-                verificationStatus: updatedShop.verificationStatus,
-                isVerified: updatedShop.isVerified,
-                verifiedBy: updatedShop.verifiedBy
+                id: shopData._id,
+                verificationStatus: shopData.verificationStatus,
+                isVerified: shopData.isVerified,
+                verifiedBy: verifiedUser
                     ? {
-                        id: updatedShop.verifiedBy._id,
-                        name: updatedShop.verifiedBy.name,
-                        email: updatedShop.verifiedBy.email,
+                        id: verifiedUser._id,
+                        name: verifiedUser.name,
+                        email: verifiedUser.email
                     }
                     : null,
-                verificationNotes: updatedShop.verificationNotes || null,
-                verifiedAt: updatedShop.verifiedAt,
+                verificationNotes: shopData.verificationNotes,
+                verifiedAt: shopData.verifiedAt,
             },
         });
+
     } catch (err) {
         console.error("❌ Error updating verification status:", err);
         res.status(500).json({ error: err.message });
     }
 };
+
 
 module.exports = {
     createShopVerification,

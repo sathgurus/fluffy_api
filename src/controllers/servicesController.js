@@ -1,42 +1,50 @@
 const Services = require("../model/servicesModel"); // single DB model
+const BusinessUsers = require("../model/businessUserModel")
+const DefaultServices = require("../model/defaultServiceModel")
 
 // ➕ Add One or Multiple Services
 const addServiceController = async (req, res) => {
-    try {
-        const { businessOwnerId, name, services } = req.body;
+  try {
+    const { businessOwnerId, services } = req.body;
 
-        if (!businessOwnerId || !name) {
-            return res.status(400).json({
-                message: "businessOwnerId and category name are required"
-            });
-        }
-
-        if (!Array.isArray(services) || services.length === 0) {
-            return res.status(400).json({
-                message: "services must be an array and cannot be empty"
-            });
-        }
-
-        const newCategory = new Services({
-            name,
-            businessOwnerId,
-            services: services.map(s => ({
-                name: s.name,
-                price: s.price
-            }))
-        });
-
-        await newCategory.save();
-
-        res.status(201).json({
-            message: "Services added successfully",
-            data: newCategory
-        });
-
-    } catch (err) {
-        console.error("❌ Error adding services:", err);
-        res.status(500).json({ error: err.message });
+    if (!businessOwnerId) {
+      return res.status(400).json({ message: "businessOwnerId is required" });
     }
+
+    // Validate services
+    if (!services || !Array.isArray(services) || services.length === 0) {
+      return res.status(400).json({ message: "services must be a non-empty array" });
+    }
+
+    const serviceDocs = services.map(cat => ({
+      businessOwnerId,
+      name: cat.name,
+      services: cat.services.map(srv => ({
+        name: srv.name,
+        price: srv.price,
+        discount:srv.discount,
+        serviceType:srv.serviceType
+      })),
+    }));
+
+    const insertedData = await Services.insertMany(serviceDocs);
+
+    await BusinessUsers.findByIdAndUpdate(
+      businessOwnerId,
+      { isAddService: true, },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "Services added successfully",
+      count: insertedData.length,
+      services: insertedData,
+    });
+
+  } catch (err) {
+    console.error("❌ Error adding services:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 
@@ -64,7 +72,7 @@ const getServicesByOwnerController = async (req, res) => {
 // 📋 Get ALL Services (Admin)
 const getAllServices = async (req, res) => {
   try {
-    const services = await Services.find().sort({ createdAt: -1 });
+    const services = await DefaultServices.find().sort({ createdAt: -1 });
 
     return res.status(200).json({
       message: "All services fetched successfully",

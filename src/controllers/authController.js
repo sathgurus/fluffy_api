@@ -11,63 +11,93 @@ function generateOTP() {
 }
 
 
+
+
 const register = async (req, res) => {
   try {
-    const { name, businessName, phone, alternatePhone, email, password, confirmPassword, termsAccepted, role, business_website } = req.body;
+    const {
+      name,
+      businessName,
+      businessType,
+      businessPhone,
+      altPhone,
+      businessEmail,
+      password,
+      confirmPassword,
+      termsAccepted,
+      role,
+      businessWebsite
+    } = req.body;
 
+    console.log(req.body)
 
-
-    // Validate role
-    if (!role || !["admin", "owner", "customer"].includes(role)) {
-      return res.status(400).json({ message: "Invalid or missing role" });
+    // 🔹 Validate required fields
+    if (!name || !businessName || !businessPhone || !businessType ||  !password || !confirmPassword) {
+      return res.status(400).json({ message: "All required fields must be filled" });
     }
 
-    if (!name || !phone || !email || !password || !confirmPassword || !businessName) {
-      return res.status(400).json({ message: "All fields are required" });
+    // 🔹 Validate terms
+    if (!termsAccepted) {
+      return res.status(400).json({ message: "You must accept terms & conditions" });
     }
 
+    // 🔹 Validate password match
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    // Check existing user
-    const existingUser = await User.findOne({ phone });
-    if (existingUser) {
+    // 🔹 Validate role
+    if (!role || !["admin", "owner", "customer"].includes(role)) {
+      return res.status(400).json({ message: "Invalid or missing role" });
+    }
+
+    // 🔹 Check existing user by phone or email
+    const existingPhone = await User.findOne({ businessPhone });
+    if (existingPhone) {
       return res.status(400).json({ message: "Phone number already registered" });
     }
 
-    // Generate OTP
-    const otp = "12345" //  generateOTP();
+    const existingEmail = await User.findOne({ businessEmail });
+    if (existingEmail) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
 
+    // 🔹 Generate OTP
+    const otp = "12345"; // generateOTP();  // use your logic later
+
+    // 🔹 Create user
     const newUser = new User({
       name,
-      businessName, 
-      phone, 
-      alternatePhone,
-      email,
-      password: password,
-      confirmPassword: confirmPassword,
+      businessName,
+      businessType,
+      businessPhone,
+      altPhone,
+      businessEmail,
+      password,
+      confirmPassword,
       termsAccepted,
       role,
       otp,
       otpVerified: false,
-      isUserRegister: true,
-      business_website
+      businessWebsite,
+      isUserRegister: true
     });
 
+    // 🔹 Save to DB (password will be hashed by pre-save hook)
     await newUser.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "User registered successfully. OTP sent.",
       userId: newUser._id,
-      otp, // for testing remove later
+      otp, // REMOVE in production
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    console.error("Register Error:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
 
 
 const verifyOTP = async (req, res) => {
@@ -118,8 +148,6 @@ const login = async (req, res) => {
   try {
     const { phone, password } = req.body;
 
-    console.log("Registering user with role:", req.body);
-
     if (!phone || !password) {
       return res.status(400).json({ message: "Phone and password required" });
     }
@@ -129,13 +157,20 @@ const login = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log("Comparing passwords for user:", user);
-
+    // 🔒 Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // 🔍 ❗ Owner must be verified to login
+    if (user.role === "owner" && user.isVerified === false) {
+      return res.status(403).json({
+        message: "Your business is not verified. Please contact customer care.",
+      });
+    }
+
+    // 🔐 Generate JWT
     const token = jwt.sign(
       {
         id: user._id,
@@ -146,7 +181,7 @@ const login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: {
@@ -155,14 +190,16 @@ const login = async (req, res) => {
         phone: user.phone,
         email: user.email,
         role: user.role,
+        isVerified: user.isVerified,
       },
     });
 
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
+
 
 
 const getUserById = async (req, res) => {

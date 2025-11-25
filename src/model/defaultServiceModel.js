@@ -20,4 +20,4 @@ const categorySchema = new mongoose.Schema({
   services: [defaultServiceSchema],
 });
 
-module.exports = mongoose.model("Default_services", defaultServiceSchema);
+module.exports = mongoose.model("DefaultServices", categorySchema);

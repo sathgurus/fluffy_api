@@ -4,14 +4,14 @@ const shopVerificationSchema = new mongoose.Schema(
   {
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "BusinessUsers",
       required: true,
       index: true,
     },
 
     // GST
     gstNumber: { type: String, default: null },
-    gstDocument: { type: String, default: null }, // file URL
+    gstDocument: { type: String, default: null },
 
     // PAN
     panNumber: { type: String, default: null },
@@ -21,40 +21,27 @@ const shopVerificationSchema = new mongoose.Schema(
     aadharNumber: { type: String, default: null },
     aadharDocument: { type: String, default: null },
 
-    // Address (simple)
+    // ⭐ TIN (Optional)
+    tinNumber: {
+      type: String,
+      default: null,   // optional
+    },
+
+    // Address
     address: {
       type: String,
       default: "",
     },
     addressDocument: {
-      type: String, // URL of proof
+      type: String,
       default: null,
     },
 
     // Shop media
     shopLogo: { type: String, default: null },
     shopPhotos: {
-      type: [String], // array of URLs
+      type: [String],
       default: [],
-    },
-
-    // Verification
-    verificationStatus: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
-    },
-    verifiedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    verificationNotes: { type: String, default: null },
-    verifiedAt: { type: Date, default: null },
-
-    isVerified: {
-      type: Boolean,
-      default: false,
     },
   },
   { timestamps: true }
