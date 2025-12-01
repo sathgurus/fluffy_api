@@ -47,4 +47,4 @@ const shopVerificationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("ShopVerify", shopVerificationSchema);
+module.exports = mongoose.model("ShopVerify", shopVerificationSchema,"ShopVerify");

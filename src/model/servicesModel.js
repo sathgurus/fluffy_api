@@ -26,4 +26,4 @@ const categorySchema = new mongoose.Schema({
     services: [serviceSchema],
 });
 
-module.exports = mongoose.model("Services", categorySchema);
+module.exports = mongoose.model("Services", categorySchema,"Services");

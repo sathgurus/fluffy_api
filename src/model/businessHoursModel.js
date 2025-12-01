@@ -24,4 +24,4 @@ const businessHoursSchema = new mongoose.Schema({
   hours: [daySchema],
 });
 
-module.exports = mongoose.model("BusinessHours", businessHoursSchema);
+module.exports = mongoose.model("BusinessHours", businessHoursSchema,"BusinessHours");

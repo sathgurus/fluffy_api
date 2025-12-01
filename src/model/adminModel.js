@@ -25,7 +25,8 @@ const adminSchema = new mongoose.Schema(
       default: "super_admin",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
+ 
 );
 
 // ✅ Hash password before saving
@@ -35,4 +36,4 @@ adminSchema.pre("save", async function (next) {
   next();
 });
 
-module.exports = mongoose.model("Admin", adminSchema);
+module.exports = mongoose.model("Admin", adminSchema,"Admin");

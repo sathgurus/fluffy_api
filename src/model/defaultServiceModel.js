@@ -7,17 +7,21 @@ const defaultServiceSchema = new mongoose.Schema(
     //price: { type: Number, required: true },
 
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    autoCreate: false,
+    autoIndex: false
+  }
 );
 
 const categorySchema = new mongoose.Schema({
   name: { type: String, required: true },
   businessOwnerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "userSchema", 
-      required: false,
-    },
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "userSchema",
+    required: false,
+  },
   services: [defaultServiceSchema],
 });
 
-module.exports = mongoose.model("DefaultServices", categorySchema);
+module.exports = mongoose.model("DefaultServices", categorySchema,"DefaultServices");

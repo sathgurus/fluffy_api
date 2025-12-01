@@ -4,6 +4,8 @@ async function connectDB() {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       dbName: process.env.DB_NAME,
+      autoCreate: false,   
+      autoIndex: false
     });
 
     console.log("✅ Mongoose Connected:", process.env.DB_NAME);

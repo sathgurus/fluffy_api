@@ -45,11 +45,11 @@ async function seedDefaultData() {
             console.log("ℹ️ Services already exist");
         }
 
-        await Promise.all([
-           // User.init(),
-            Admin.init(),
-            DefaultService.init(),
-        ]);
+        // await Promise.all([
+        //    // User.init(),
+        //     Admin.init(),
+        //     //DefaultService.init(),
+        // ]);
 
         console.log("🌟 Seeding completed successfully!");
 
