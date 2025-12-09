@@ -43,5 +43,30 @@ const setBusinessHours = async (req, res) => {
     }
 };
 
+const getBusinessHours = async (req, res) => {
+  try {
+    const { businessId } = req.params;
+    console.log(req.body, req.params);
 
-module.exports = { setBusinessHours };
+    const data = await BusinessHours.findOne({ businessId });
+
+    if (!data) {
+      return res.status(404).json({ message: "No business hours found" });
+    }
+
+    res.status(200).json({
+      message: "Business hours fetched successfully",
+      data,
+    });
+
+  } catch (error) {
+    console.error("Get Business Hours Error:", error);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+
+module.exports = { setBusinessHours,getBusinessHours };

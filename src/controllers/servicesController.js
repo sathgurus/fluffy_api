@@ -52,7 +52,7 @@ const addServiceController = async (req, res) => {
 // 📋 Get All Services by Business Owner
 const getServicesByOwnerController = async (req, res) => {
   try {
-    const { businessOwnerId } = req.query;
+    const { businessOwnerId } = req.params;
 
     const services = await Services.find({ businessOwnerId });
 

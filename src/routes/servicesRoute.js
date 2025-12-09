@@ -11,7 +11,7 @@ const {
 router.post("/add", addServiceController);
 
 // 📋 Get Services by Business Owner
-router.get("/owner", getServicesByOwnerController);
+router.get("/owner-services/:businessOwnerId", getServicesByOwnerController);
 
 // 📋 Get ALL Services (Admin)
 router.get("/all", getAllServices);

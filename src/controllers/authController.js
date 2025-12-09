@@ -169,6 +169,7 @@ const login = async (req, res) => {
     if (user.role === "owner" && user.isVerified === false) {
       return res.status(403).json({
         isVerified:false,
+        user:user,
         message: "Your business is not verified. Please contact customer care.",
       });
     }
@@ -187,14 +188,7 @@ const login = async (req, res) => {
     return res.status(200).json({
       message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        phone: user.businessPhone,
-        email: user.email,
-        role: user.role,
-        isVerified: user.isVerified,
-      },
+      user: user,
     });
 
   } catch (err) {

@@ -8,7 +8,7 @@ const {
     getUserById
 } = require("../controllers/authController");
 const { createShopVerification,getAllShopVerifications,updateVerificationStatus, } = require("../controllers/shopVerifyController");
-const { setBusinessHours } = require("../controllers/businessHoursController");
+const { setBusinessHours, getBusinessHours } = require("../controllers/businessHoursController");
 const { setBusinessLocation } = require("../controllers/locationController");
 
 router.post("/register", register);
@@ -19,6 +19,7 @@ router.post("/business-verification",createShopVerification)
 router.get("/verification-requests",getAllShopVerifications)
 router.post("/verify-business",updateVerificationStatus)
 router.post("/business-hours",setBusinessHours);
+router.get('/business-hours/:businessId', getBusinessHours);
 router.post("/ping-location",setBusinessLocation)
 
 module.exports = router;
