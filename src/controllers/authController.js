@@ -32,7 +32,7 @@ const register = async (req, res) => {
     console.log(req.body)
 
     // 🔹 Validate required fields
-    if (!name || !businessName || !businessPhone || !businessType ||  !password || !confirmPassword) {
+    if (!name || !businessName || !businessPhone || !businessType || !password || !confirmPassword) {
       return res.status(400).json({ message: "All required fields must be filled" });
     }
 
@@ -154,7 +154,9 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "Phone and password required" });
     }
 
-    const user = await User.findOne({ businessPhone });
+    const user = await User.findOne({ businessPhone })
+    .populate('shopVerification')
+    .populate("businessLocation");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -168,11 +170,13 @@ const login = async (req, res) => {
     // 🔍 ❗ Owner must be verified to login
     if (user.role === "owner" && user.isVerified === false) {
       return res.status(403).json({
-        isVerified:false,
-        user:user,
+        isVerified: false,
+        user: user,
         message: "Your business is not verified. Please contact customer care.",
       });
     }
+
+    //console.log("User logged in:", user);
 
     // 🔐 Generate JWT
     const token = jwt.sign(
