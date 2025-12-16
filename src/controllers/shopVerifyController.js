@@ -143,9 +143,49 @@ const updateVerificationStatus = async (req, res) => {
     }
 };
 
+const getShopDetailsByBusinessId = async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        //console.log("req",req.params)
+
+        if (!businessId) {
+            return res.status(400).json({ message: "businessId is required" });
+        }
+
+        // Find business user to get shopVerification ID
+        const businessUser = await BusinessUsers.findById(businessId)
+            .select("shopVerification");
+
+        if (!businessUser || !businessUser.shopVerification) {
+            return res.status(404).json({ message: "Shop verification not found" });
+        }
+
+        // Fetch only shop verification document
+        const business = await BusinessUsers.findById(businessId)
+            .populate("businessLocation")
+            .populate("businessHours")
+            .populate({
+                path: "shopVerification",
+            });
+
+        if (!business) {
+            return res.status(404).json({ message: "Business details not found" });
+        }
+
+        res.status(200).json({
+            message: "Business details fetched successfully",
+            data: business
+        });
+
+    } catch (err) {
+        console.error("❌ Error fetching business details:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
 
 module.exports = {
     createShopVerification,
     getAllShopVerifications,
     updateVerificationStatus,
+    getShopDetailsByBusinessId
 };
