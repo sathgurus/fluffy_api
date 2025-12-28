@@ -11,19 +11,28 @@ const addServiceController = async (req, res) => {
       return res.status(400).json({ message: "businessOwnerId is required" });
     }
 
-    // Validate services
-    if (!services || !Array.isArray(services) || services.length === 0) {
+    if (!Array.isArray(services) || services.length === 0) {
       return res.status(400).json({ message: "services must be a non-empty array" });
     }
 
-    const serviceDocs = services.map(cat => ({
+    const serviceDocs = services.map(category => ({
       businessOwnerId,
-      name: cat.name,
-      services: cat.services.map(srv => ({
+      name: category.name,
+      services: category.services.map(srv => ({
+        serviceId: srv.serviceId,
         name: srv.name,
-        price: srv.price,
-        discount:srv.discount,
-        serviceType:srv.serviceType
+
+        weekdayPrice: Number(srv.weekdayPrice),
+        weekendPrice: Number(srv.weekendPrice),
+
+        finalWeekdayPrice: Number(srv.finalWeekdayPrice),
+        finalWeekendPrice: Number(srv.finalWeekendPrice),
+
+        weekdayDiscount: Number(srv.weekdayDiscount),
+        weekdayDiscountType: srv.weekdayDiscountType,
+
+        weekendDiscount: Number(srv.weekendDiscount),
+        weekendDiscountType: srv.weekendDiscountType,
       })),
     }));
 
@@ -31,7 +40,7 @@ const addServiceController = async (req, res) => {
 
     await BusinessUsers.findByIdAndUpdate(
       businessOwnerId,
-      { isAddService: true, },
+      { isAddService: true },
       { new: true }
     );
 
@@ -43,9 +52,10 @@ const addServiceController = async (req, res) => {
 
   } catch (err) {
     console.error("❌ Error adding services:", err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
+
 
 
 
